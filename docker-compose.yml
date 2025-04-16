@@ -1,72 +1,47 @@
-version: "3.8"
 
 services:
-    webchat_web:
-        container_name: webchat_web
+    chat_web:
+        container_name: chat_web
         image: nginx:alpine
         ports:
-            - "8070:80"
+            - "8850:80"
         volumes:
             - ./:/var/www
             - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
         depends_on:
-            - webchat_app
+            - chat_app
         networks:
-            - webchat_network
-
-    webchat_app:
-        container_name: webchat_app
+            - chat_network
+    chat_app:
+        container_name: chat_app
         build:
             context: .
             dockerfile: ./docker/Dockerfile
         depends_on:
-            - webchat_db
+            - chat_db
         volumes:
             - ./:/var/www
         networks:
-            - webchat_network
+            - chat_network
         ports:
-            - "9090:9000"
+            - "9150:9010"
 
-    webchat_db:
+    chat_db:
         image: mysql
-        container_name: webchat_db
+        container_name: mysql
         restart: unless-stopped
         environment:
             MYSQL_DATABASE: ${DB_DATABASE}
-            MYSQL_USER: ${DB_USERNAME}
             MYSQL_PASSWORD: ${DB_PASSWORD}
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
         volumes:
-            - webchat_database:/var/lib/mysql
+            - chat_database:/var/lib/mysql
         networks:
-            - webchat_network
-        ports:
-            - "3307:3306"  # Portni to‘g‘riladim
-
-    webchat_redis:
-        container_name: webchat_redis
-        image: redis:alpine
-        restart: unless-stopped
-        ports:
-            - "6380:6379"  # Redis portini tuzatdim
-        networks:
-            - webchat_network
-
-    webchat_node:
-        container_name: webchat_node
-        image: node:alpine
-        volumes:
-            - ./:/var/www
-        command: sh -c "npm install && npm run build"
-        depends_on:
-            - webchat_app
-        ports:
-            - "8020:8000"
-
+            - chat_network
+        expose:
+            - 3355
 networks:
-    webchat_network:
+    chat_network:
         driver: bridge
-
 volumes:
-    webchat_database:
+    chat_database:
